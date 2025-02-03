@@ -23,20 +23,36 @@
 import UIKit
 
 extension UIColor {
+    /// Standard secondary text color for headers and unselected buttons
+    static let secondaryText: UIColor = if #available(iOS 13.0, *) {
+        .secondaryLabel
+    } else {
+        .systemGray
+    }
+
     /// Background color for `MCEmojiPickerView`.
     ///
     /// This is a standard color from UIKit - `.systemGroupedBackground`.
+    #if os(visionOS)
+    static let popoverBackgroundColor = UIColor.clear
+    #else
     static let popoverBackgroundColor = UIColor(
         light:  UIColor(red: 0.95, green: 0.95, blue: 0.97, alpha: 1.0),
         dark: UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
     )
+    #endif
+
     /// Background color for `MCEmojiSkinTonePickerBackgroundView` and `MCEmojiPreviewView`.
     ///
     /// The colors were taken from similar iOS elements.
+    #if os(visionOS)
+    static let previewAndSkinToneBackgroundViewColor = UIColor.clear
+    #else
     static let previewAndSkinToneBackgroundViewColor = UIColor(
         light: UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0),
         dark: UIColor(red: 0.45, green: 0.45, blue: 0.46, alpha: 1.0)
     )
+    #endif
 }
 
 extension UIColor {

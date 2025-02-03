@@ -35,6 +35,7 @@ extension View {
     ///     - isDismissAfterChoosing: A boolean value that determines whether the screen will be hidden after the emoji is selected.
     ///     - selectedEmojiCategoryTintColor: Color for the selected emoji category.
     ///     - feedBackGeneratorStyle: Feedback generator style. To turn off, set `nil` to this parameter.
+    #if os(iOS)
     @ViewBuilder public func emojiPicker(
         isPresented: Binding<Bool>,
         selectedEmoji: Binding<String>,
@@ -56,7 +57,31 @@ extension View {
                 selectedEmojiCategoryTintColor: selectedEmojiCategoryTintColor,
                 feedBackGeneratorStyle: feedBackGeneratorStyle
             )
-                .allowsHitTesting(false)
+            .allowsHitTesting(false)
         )
     }
+    #else
+    @ViewBuilder public func emojiPicker(
+        isPresented: Binding<Bool>,
+        selectedEmoji: Binding<String>,
+        arrowDirection: MCPickerArrowDirection? = nil,
+        customHeight: CGFloat? = nil,
+        horizontalInset: CGFloat? = nil,
+        isDismissAfterChoosing: Bool? = nil,
+        selectedEmojiCategoryTintColor: UIColor? = nil
+    ) -> some View {
+        self.overlay(
+            MCEmojiPickerRepresentableController(
+                isPresented: isPresented,
+                selectedEmoji: selectedEmoji,
+                arrowDirection: arrowDirection,
+                customHeight: customHeight,
+                horizontalInset: horizontalInset,
+                isDismissAfterChoosing: isDismissAfterChoosing,
+                selectedEmojiCategoryTintColor: selectedEmojiCategoryTintColor
+            )
+            .allowsHitTesting(false)
+        )
+    }
+    #endif
 }

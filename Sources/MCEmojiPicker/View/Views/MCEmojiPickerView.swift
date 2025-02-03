@@ -88,7 +88,21 @@ final class MCEmojiPickerView: UIView {
         )
         return collectionView
     }()
-    
+
+    #if os(visionOS)
+    private let categoriesStackViewContainer = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+    #else
+    private let categoriesStackViewContainer = UIView()
+    #endif
+
+    private var categoriesStackViewContentView: UIView {
+        #if os(visionOS)
+        categoriesStackViewContainer.contentView
+        #else
+        categoriesStackViewContainer
+        #endif
+    }
+
     private let categoriesStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -173,27 +187,38 @@ final class MCEmojiPickerView: UIView {
         let separatorView = UIView()
         separatorView.translatesAutoresizingMaskIntoConstraints = false
         separatorView.backgroundColor = Constants.separatorColor
-        
-        addSubview(categoriesStackView)
+
+        categoriesStackViewContentView.addSubview(categoriesStackView)
+        categoriesStackViewContainer.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(categoriesStackViewContainer)
         addSubview(separatorView)
-        
+
         NSLayoutConstraint.activate([
-            categoriesStackView.leadingAnchor.constraint(
-                equalTo: leadingAnchor,
-                constant: Constants.categoriesStackViewInsets.left
+            categoriesStackViewContainer.leadingAnchor.constraint(
+                equalTo: leadingAnchor
             ),
-            categoriesStackView.trailingAnchor.constraint(
-                equalTo: trailingAnchor,
-                constant: Constants.categoriesStackViewInsets.right
+            categoriesStackViewContainer.trailingAnchor.constraint(
+                equalTo: trailingAnchor
             ),
-            categoriesStackView.bottomAnchor.constraint(
+            categoriesStackViewContainer.bottomAnchor.constraint(
                 equalTo: bottomAnchor,
                 constant: -safeAreaInsets.bottom
             ),
-            categoriesStackView.heightAnchor.constraint(
+            categoriesStackViewContainer.heightAnchor.constraint(
                 equalToConstant: categoriesStackViewHeight
             ),
-            
+
+            categoriesStackView.leadingAnchor.constraint(
+                equalTo: categoriesStackViewContentView.leadingAnchor,
+                constant: Constants.categoriesStackViewInsets.left
+            ),
+            categoriesStackView.trailingAnchor.constraint(
+                equalTo: categoriesStackViewContentView.trailingAnchor,
+                constant: Constants.categoriesStackViewInsets.right
+            ),
+            categoriesStackView.topAnchor.constraint(equalTo: categoriesStackViewContentView.topAnchor),
+            categoriesStackView.bottomAnchor.constraint(equalTo: categoriesStackViewContentView.bottomAnchor),
+
             separatorView.leadingAnchor.constraint(equalTo: leadingAnchor),
             separatorView.trailingAnchor.constraint(equalTo: trailingAnchor),
             separatorView.topAnchor.constraint(equalTo: categoriesStackView.topAnchor),

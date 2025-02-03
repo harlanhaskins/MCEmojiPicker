@@ -72,7 +72,8 @@ public final class MCEmojiPickerViewController: UIViewController {
             popoverPresentationController?.sourceView = sourceView
         }
     }
-    
+
+    #if os(iOS)
     /// Feedback generator style. To turn off, set `nil` to this parameter.
     ///
     /// The default value of this property is `.light`.
@@ -85,10 +86,14 @@ public final class MCEmojiPickerViewController: UIViewController {
             generator = UIImpactFeedbackGenerator(style: feedBackGeneratorStyle)
         }
     }
-    
+    #endif
+
     // MARK: - Private Properties
-    
+
+    #if os(iOS)
     private var generator: UIImpactFeedbackGenerator? = UIImpactFeedbackGenerator(style: .light)
+    #endif
+
     private var viewModel: MCEmojiPickerViewModelProtocol = MCEmojiPickerViewModel()
     private lazy var emojiPickerView: MCEmojiPickerView = {
         let categories = viewModel.emojiCategories.map { $0.type }
@@ -155,7 +160,9 @@ public final class MCEmojiPickerViewController: UIViewController {
     }
     
     private func setupPreferredContentSize() {
+        let defaultSize = CGSize(width: 340, height: 380)
         preferredContentSize = {
+            #if os(iOS)
             switch UIDevice.current.userInterfaceIdiom {
             case .phone:
                 let sideInset: CGFloat = 19
@@ -168,8 +175,11 @@ public final class MCEmojiPickerViewController: UIViewController {
                     height: customHeight ?? popoverWidth * heightProportionToWidth
                 )
             default:
-                return CGSize(width: 340, height: 380)
+                return defaultSize
             }
+            #else
+            return defaultSize
+            #endif
         }()
     }
     
@@ -233,7 +243,9 @@ extension MCEmojiPickerViewController: MCEmojiPickerViewDelegate {
     }
     
     func feedbackImpactOccurred() {
+        #if os(iOS)
         generator?.impactOccurred()
+        #endif
     }
     
     func didChoiceEmoji(_ emoji: MCEmoji?) {

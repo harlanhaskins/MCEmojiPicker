@@ -37,7 +37,7 @@ final class MCEmojiCategoryIconView: UIView {
     /// Target icon type.
     private var type: MCEmojiCategoryType
     /// Current tint color for the icon.
-    private var currentIconTintColor: UIColor = .systemGray
+    private var currentIconTintColor: UIColor = .secondaryText
     /// Selected tint color for the icon.
     private var selectedIconTintColor: UIColor
     /// Current icon state.
@@ -69,7 +69,7 @@ final class MCEmojiCategoryIconView: UIView {
         self.state = state
         switch state {
         case .standard:
-            currentIconTintColor = .systemGray
+            currentIconTintColor = .secondaryText
         case .highlighted:
             currentIconTintColor = adjust(color: currentIconTintColor)
         case .selected:

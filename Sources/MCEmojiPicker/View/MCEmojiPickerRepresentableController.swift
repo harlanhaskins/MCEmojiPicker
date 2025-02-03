@@ -63,14 +63,17 @@ public struct MCEmojiPickerRepresentableController: UIViewControllerRepresentabl
     ///
     /// The default value of this property is `.systemBlue`.
     public var selectedEmojiCategoryTintColor: UIColor?
-    
+
+    #if os(iOS)
     /// Feedback generator style. To turn off, set `nil` to this parameter.
     ///
     /// The default value of this property is `.light`.
     public var feedBackGeneratorStyle: UIImpactFeedbackGenerator.FeedbackStyle?
-    
+    #endif
+
     // MARK: - Initializers
-    
+
+    #if os(iOS)
     public init(
         isPresented: Binding<Bool>,
         selectedEmoji: Binding<String>,
@@ -90,7 +93,26 @@ public struct MCEmojiPickerRepresentableController: UIViewControllerRepresentabl
         self.selectedEmojiCategoryTintColor = selectedEmojiCategoryTintColor
         self.feedBackGeneratorStyle = feedBackGeneratorStyle
     }
-    
+    #else
+    public init(
+        isPresented: Binding<Bool>,
+        selectedEmoji: Binding<String>,
+        arrowDirection: MCPickerArrowDirection? = nil,
+        customHeight: CGFloat? = nil,
+        horizontalInset: CGFloat? = nil,
+        isDismissAfterChoosing: Bool? = nil,
+        selectedEmojiCategoryTintColor: UIColor? = nil
+    ) {
+        self._isPresented = isPresented
+        self._selectedEmoji = selectedEmoji
+        self.arrowDirection = arrowDirection
+        self.customHeight = customHeight
+        self.horizontalInset = horizontalInset
+        self.isDismissAfterChoosing = isDismissAfterChoosing
+        self.selectedEmojiCategoryTintColor = selectedEmojiCategoryTintColor
+    }
+    #endif
+
     // MARK: - Public Methods
     
     public func makeCoordinator() -> Coordinator {
@@ -119,7 +141,11 @@ public struct MCEmojiPickerRepresentableController: UIViewControllerRepresentabl
             if let selectedEmojiCategoryTintColor {
                 emojiPicker.selectedEmojiCategoryTintColor = selectedEmojiCategoryTintColor
             }
-            if let feedBackGeneratorStyle { emojiPicker.feedBackGeneratorStyle = feedBackGeneratorStyle }
+            #if os(iOS)
+            if let feedBackGeneratorStyle {
+                emojiPicker.feedBackGeneratorStyle = feedBackGeneratorStyle
+            }
+            #endif
             context.coordinator.addPickerDismissingObserver()
             representableController.present(emojiPicker, animated: true)
         case false:

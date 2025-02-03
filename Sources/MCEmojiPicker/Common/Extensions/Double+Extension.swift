@@ -35,14 +35,18 @@ extension Double {
     /// Used to increase various sizes (fonts, heights and widths).
     /// - Parameter isOnlyToIncrease: Responsible for whether the value will decrease if the screen size is smaller than the default.
     func fit(isOnlyToIncrease: Bool = true) -> Double {
-        let defaultScreenSize = CGSize(width: 375, height: 812)
-        let currentScreenSize = UIScreen.main.bounds.size
+        #if os(iOS)
         // Check the type of the current device, if it is not a phone, return the original value.
         guard UIDevice.current.userInterfaceIdiom == .phone else { return self }
+        let defaultScreenSize = CGSize(width: 375, height: 812)
+        let currentScreenSize = UIScreen.main.bounds.size
         var scale = 1.0
         if isOnlyToIncrease && currentScreenSize.height > defaultScreenSize.height || !isOnlyToIncrease {
             scale = currentScreenSize.height / defaultScreenSize.height
         }
         return self * scale
+        #else
+        return self
+        #endif
     }
 }

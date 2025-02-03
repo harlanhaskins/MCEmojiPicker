@@ -28,7 +28,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        #if os(visionOS)
+        let windowScene = application.connectedScenes.first { $0 is UIWindowScene } as! UIWindowScene
+        window = UIWindow(windowScene: windowScene)
+        #else
         window = UIWindow(frame: UIScreen.main.bounds)
+        #endif
         window?.rootViewController = ViewController()
         window?.makeKeyAndVisible()
         return true

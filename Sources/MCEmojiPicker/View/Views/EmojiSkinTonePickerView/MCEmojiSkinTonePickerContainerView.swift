@@ -78,11 +78,13 @@ final class MCEmojiSkinTonePickerContainerView: UIView {
     }
     
     deinit {
+        #if !os(visionOS)
         NotificationCenter.default.removeObserver(
             self,
             name: UIDevice.orientationDidChangeNotification,
             object: nil
         )
+        #endif
     }
     
     // MARK: - Actions
@@ -104,12 +106,14 @@ final class MCEmojiSkinTonePickerContainerView: UIView {
     }
     
     private func setupNotifications() {
+        #if !os(visionOS)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(orientationChanged),
             name: UIDevice.orientationDidChangeNotification,
             object: nil
         )
+        #endif
     }
     
     private func setupGestureRecognizers() {
