@@ -29,3 +29,5 @@
 "items" = "OGGETTI";
 "symbols" = "SIMBOLI";
 "flags" = "BANDIERE";
+
+"search" = "Cerca";

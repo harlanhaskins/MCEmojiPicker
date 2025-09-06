@@ -129,7 +129,7 @@ public final class MCEmojiPickerViewController: UIViewController {
         super.viewDidDisappear(animated)
         NotificationCenter.default.post(name: .MCEmojiPickerDidDisappear, object: nil)
     }
-    
+
     // MARK: - Private Methods
     
     private func bindViewModel() {
@@ -141,8 +141,8 @@ public final class MCEmojiPickerViewController: UIViewController {
                 dismiss(animated: true, completion: nil)
             }
         }
-        viewModel.selectedEmojiCategoryIndex.bind { [unowned self] categoryIndex in
-            self.emojiPickerView.updateSelectedCategoryIcon(with: categoryIndex)
+        viewModel.selectedEmojiCategoryType.bind { [unowned self] categoryType in
+            self.emojiPickerView.updateSelectedCategoryIcon(with: categoryType)
         }
     }
     
@@ -193,38 +193,42 @@ public final class MCEmojiPickerViewController: UIViewController {
 // MARK: - EmojiPickerViewDelegate
 
 extension MCEmojiPickerViewController: MCEmojiPickerViewDelegate {
-    func didChoiceEmojiCategory(at index: Int) {
-        updateCurrentSelectedEmojiCategoryIndex(with: index)
+    func didChooseEmojiCategory(_ type: MCEmojiCategoryType) {
+        updateCurrentSelectedEmojiCategoryType(type)
     }
     
     func numberOfSections() -> Int {
         viewModel.numberOfSections()
     }
-    
-    func numberOfItems(in section: Int) -> Int {
-        viewModel.numberOfItems(in: section)
+
+    func numberOfItems(for type: MCEmojiCategoryType) -> Int {
+        viewModel.numberOfItems(for: type)
     }
     
     func emoji(at indexPath: IndexPath) -> MCEmoji {
         viewModel.emoji(at: indexPath)
     }
     
-    func sectionHeaderName(for section: Int) -> String {
-        viewModel.sectionHeaderName(for: section)
+    func sectionHeaderName(for type: MCEmojiCategoryType) -> String {
+        viewModel.sectionHeaderName(for: type)
     }
     
-    func getCurrentSelectedEmojiCategoryIndex() -> Int {
-        viewModel.selectedEmojiCategoryIndex.value
+    func getCurrentSelectedEmojiCategoryType() -> MCEmojiCategoryType {
+        viewModel.selectedEmojiCategoryType.value
     }
     
-    func updateCurrentSelectedEmojiCategoryIndex(with index: Int) {
-        viewModel.selectedEmojiCategoryIndex.value = index
+    func updateCurrentSelectedEmojiCategoryType(_ type: MCEmojiCategoryType) {
+        viewModel.selectedEmojiCategoryType.value = type
     }
     
     func getEmojiPickerFrame() -> CGRect {
         presentationController?.presentedView?.frame ?? view.frame
     }
-    
+
+    func isDisplayingEmojiSection(_ type: MCEmojiCategoryType) -> Bool {
+        viewModel.emojiCategories.contains(where: { $0.type == type })
+    }
+
     func updateEmojiSkinTone(_ skinToneRawValue: Int, in indexPath: IndexPath) {
         viewModel.selectedEmoji.value = viewModel.updateEmojiSkinTone(
             skinToneRawValue,
@@ -236,8 +240,16 @@ extension MCEmojiPickerViewController: MCEmojiPickerViewDelegate {
         generator?.impactOccurred()
     }
     
-    func didChoiceEmoji(_ emoji: MCEmoji?) {
+    func didChooseEmoji(_ emoji: MCEmoji?) {
         viewModel.selectedEmoji.value = emoji
+    }
+
+    func type(forSection section: Int) -> MCEmojiCategoryType {
+        viewModel.emojiCategories[section].type
+    }
+
+    func section(of type: MCEmojiCategoryType) -> Int {
+        viewModel.emojiCategories.firstIndex { $0.type == type } ?? 0
     }
 }
 
@@ -246,5 +258,14 @@ extension MCEmojiPickerViewController: MCEmojiPickerViewDelegate {
 extension MCEmojiPickerViewController: UIAdaptivePresentationControllerDelegate {
     public func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
         return .none
+    }
+}
+
+extension MCEmojiPickerViewController: UISearchBarDelegate {
+    public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText != viewModel.searchText {
+            viewModel.searchText = searchText
+            emojiPickerView.reload()
+        }
     }
 }

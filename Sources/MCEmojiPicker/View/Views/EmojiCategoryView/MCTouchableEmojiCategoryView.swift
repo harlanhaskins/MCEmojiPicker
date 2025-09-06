@@ -29,7 +29,7 @@ protocol MCEmojiCategoryViewDelegate: AnyObject {
      
      - Parameter index: index of the selected category.
      */
-    func didChoiceCategory(at index: Int)
+    func didChooseCategory(_ type: MCEmojiCategoryType)
 }
 
 /// The class store the category icon and processes handling touches.
@@ -44,21 +44,19 @@ final class MCTouchableEmojiCategoryView: UIView {
         let inset = bounds.width * 0.23
         return UIEdgeInsets(top: inset, left: inset, bottom: inset, right: inset)
     }()
-    /// Target category index.
-    private var categoryIndex: Int
-    
+    let categoryType: MCEmojiCategoryType
+
     private weak var delegate: MCEmojiCategoryViewDelegate?
     
     // MARK: - Initializers
     
     init(
         delegate: MCEmojiCategoryViewDelegate,
-        categoryIndex: Int,
         categoryType: MCEmojiCategoryType,
         selectedEmojiCategoryTintColor: UIColor
     ) {
         self.delegate = delegate
-        self.categoryIndex = categoryIndex
+        self.categoryType = categoryType
         self.categoryIconView = MCEmojiCategoryIconView(
             type: categoryType,
             selectedIconTintColor: selectedEmojiCategoryTintColor
@@ -85,7 +83,7 @@ final class MCTouchableEmojiCategoryView: UIView {
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         categoryIconView.updateIconTintColor(for: .selected)
-        delegate?.didChoiceCategory(at: categoryIndex)
+        delegate?.didChooseCategory(categoryType)
     }
     
     // MARK: - Public Methods
@@ -93,11 +91,11 @@ final class MCTouchableEmojiCategoryView: UIView {
     /**
      Updates the icon state to the selected one if the indexes match and the standard one if not.
      
-     - Parameter selectedCategoryIndex: Selected category index.
+     - Parameter selectedCategoryType: Selected category type.
      */
-    public func updateCategoryViewState(selectedCategoryIndex: Int) {
+    public func updateCategoryViewState(selectedCategoryType: MCEmojiCategoryType) {
         categoryIconView.updateIconTintColor(
-            for: categoryIndex == selectedCategoryIndex ? .selected : .standard
+            for: categoryType == selectedCategoryType ? .selected : .standard
         )
     }
     

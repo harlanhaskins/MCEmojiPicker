@@ -22,18 +22,21 @@
 
 import UIKit
 
-protocol MCEmojiPickerViewDelegate: AnyObject {
+protocol MCEmojiPickerViewDelegate: AnyObject, UISearchBarDelegate {
     /// Processes an event by category selection.
     ///
-    /// - Parameter index: index of the selected category.
-    func didChoiceEmojiCategory(at index: Int)
-    func didChoiceEmoji(_ emoji: MCEmoji?)
+    /// - Parameter type: type of the selected category.
+    func didChooseEmojiCategory(_ type: MCEmojiCategoryType)
+    func didChooseEmoji(_ emoji: MCEmoji?)
+    func type(forSection section: Int) -> MCEmojiCategoryType
+    func section(of type: MCEmojiCategoryType) -> Int
     func numberOfSections() -> Int
-    func numberOfItems(in section: Int) -> Int
+    func numberOfItems(for type: MCEmojiCategoryType) -> Int
+    func isDisplayingEmojiSection(_ type: MCEmojiCategoryType) -> Bool
     func emoji(at indexPath: IndexPath) -> MCEmoji
-    func sectionHeaderName(for section: Int) -> String
-    func getCurrentSelectedEmojiCategoryIndex() -> Int
-    func updateCurrentSelectedEmojiCategoryIndex(with index: Int)
+    func sectionHeaderName(for type: MCEmojiCategoryType) -> String
+    func getCurrentSelectedEmojiCategoryType() -> MCEmojiCategoryType
+    func updateCurrentSelectedEmojiCategoryType(_ type: MCEmojiCategoryType)
     func getEmojiPickerFrame() -> CGRect
     func updateEmojiSkinTone(_ skinToneRawValue: Int, in indexPath: IndexPath)
     func feedbackImpactOccurred()
@@ -68,7 +71,20 @@ final class MCEmojiPickerView: UIView {
     // MARK: - Private Properties
     
     private let emojiCategoryTypes: [MCEmojiCategoryType]
-    
+
+    private let searchBar: UISearchBar = {
+        let bar = UISearchBar()
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        bar.searchBarStyle = .minimal
+        bar.placeholder = NSLocalizedString(
+            "search",
+            tableName: "MCEmojiPickerLocalizable",
+            bundle: .module,
+            comment: "Search"
+        )
+        return bar
+    }()
+
     private let collectionView: UICollectionView = {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.sectionHeadersPinToVisibleBounds = true
@@ -127,6 +143,7 @@ final class MCEmojiPickerView: UIView {
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         setupCategoryViews()
+        setupSearchBarLayout()
         setupCollectionViewLayout()
         setupCollectionViewBottomInsets()
         setupCategoriesControlLayout()
@@ -137,9 +154,9 @@ final class MCEmojiPickerView: UIView {
     /// Passes the index of the selected category to all categoryViews to update the state.
     ///
     /// - Parameter categoryIndex: Selected category index.
-    public func updateSelectedCategoryIcon(with categoryIndex: Int) {
+    public func updateSelectedCategoryIcon(with categoryType: MCEmojiCategoryType) {
         categoryViews.forEach({
-            $0.updateCategoryViewState(selectedCategoryIndex: categoryIndex)
+            $0.updateCategoryViewState(selectedCategoryType: categoryType)
         })
     }
     
@@ -152,19 +169,38 @@ final class MCEmojiPickerView: UIView {
     private func setupDelegates() {
         collectionView.delegate = self
         collectionView.dataSource = self
+
+        searchBar.delegate = delegate
     }
     
     private func setupCollectionViewBottomInsets() {
         collectionView.contentInset.bottom = categoriesStackViewHeight
         collectionView.verticalScrollIndicatorInsets.bottom = categoriesStackViewHeight
     }
-    
+
+    internal func reload() {
+        collectionView.reloadData()
+
+        for button in categoryViews {
+            button.isUserInteractionEnabled = delegate?.isDisplayingEmojiSection(button.categoryType) == true
+        }
+    }
+
+    private func setupSearchBarLayout() {
+        addSubview(searchBar)
+        NSLayoutConstraint.activate([
+            searchBar.topAnchor.constraint(equalTo: topAnchor, constant: safeAreaInsets.top),
+            searchBar.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+            searchBar.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0),
+        ])
+    }
+
     private func setupCollectionViewLayout() {
         addSubview(collectionView)
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            collectionView.topAnchor.constraint(equalTo: topAnchor, constant: safeAreaInsets.top),
+            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 12),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -safeAreaInsets.bottom)
         ])
     }
@@ -202,15 +238,14 @@ final class MCEmojiPickerView: UIView {
     }
     
     private func setupCategoryViews() {
-        for categoryIndex in 0...emojiCategoryTypes.count - 1 {
+        for categoryType in emojiCategoryTypes {
             let categoryView = MCTouchableEmojiCategoryView(
                 delegate: self,
-                categoryIndex: categoryIndex,
-                categoryType: emojiCategoryTypes[categoryIndex],
+                categoryType: categoryType,
                 selectedEmojiCategoryTintColor: selectedEmojiCategoryTintColor
             )
             // Installing selected state for first category.
-            categoryView.updateCategoryViewState(selectedCategoryIndex: .zero)
+            categoryView.updateCategoryViewState(selectedCategoryType: emojiCategoryTypes[0])
             categoryViews.append(categoryView)
             categoriesStackView.addArrangedSubview(categoryView)
         }
@@ -223,7 +258,9 @@ final class MCEmojiPickerView: UIView {
     /// Scroll collectionView to header for selected category.
     ///
     /// - Parameter section: Selected category index.
-    private func scrollToHeader(for section: Int) {
+    private func scrollToHeader(for type: MCEmojiCategoryType) {
+        guard let delegate else { return }
+        let section = delegate.section(of: type)
         guard let cellFrame = collectionView.collectionViewLayout.layoutAttributesForItem(at: IndexPath(item: 0, section: section))?.frame,
               let headerFrame = collectionView.collectionViewLayout.layoutAttributesForSupplementaryView(
                 ofKind: UICollectionView.elementKindSectionHeader,
@@ -251,7 +288,9 @@ extension MCEmojiPickerView: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        return delegate?.numberOfItems(in: section) ?? .zero
+        guard let delegate else { return 0 }
+        let type = delegate.type(forSection: section)
+        return delegate.numberOfItems(for: type)
     }
     
     public func collectionView(
@@ -280,12 +319,12 @@ extension MCEmojiPickerView: UICollectionViewDataSource {
                 ofKind: kind,
                 withReuseIdentifier: MCEmojiSectionHeader.reuseIdentifier,
                 for: indexPath
-              ) as? MCEmojiSectionHeader
+              ) as? MCEmojiSectionHeader,
+              let delegate
         else { return UICollectionReusableView() }
+        let type = delegate.type(forSection: indexPath.section)
         sectionHeader.configure(
-            with: delegate?.sectionHeaderName(
-                for: indexPath.section
-            ) ?? ""
+            with: delegate.sectionHeaderName(for: type)
         )
         return sectionHeader
     }
@@ -343,9 +382,14 @@ extension MCEmojiPickerView: UIScrollViewDelegate {
         let indexPathsForVisibleHeaders = collectionView.indexPathsForVisibleSupplementaryElements(
             ofKind: UICollectionView.elementKindSectionHeader
         ).sorted(by: { $0.section < $1.section })
-        if let selectedEmojiCategoryIndex = indexPathsForVisibleHeaders.first?.section,
-           delegate?.getCurrentSelectedEmojiCategoryIndex() != selectedEmojiCategoryIndex {
-            delegate?.updateCurrentSelectedEmojiCategoryIndex(with: selectedEmojiCategoryIndex)
+
+        guard let delegate,
+              let selectedEmojiCategoryIndex = indexPathsForVisibleHeaders.first?.section else {
+            return
+        }
+        let selectedEmojiCategoryType = delegate.type(forSection: selectedEmojiCategoryIndex)
+        if delegate.getCurrentSelectedEmojiCategoryType() != selectedEmojiCategoryType {
+            delegate.updateCurrentSelectedEmojiCategoryType(selectedEmojiCategoryType)
         }
     }
 }
@@ -390,7 +434,7 @@ extension MCEmojiPickerView: MCEmojiCollectionViewCellDelegate {
             toggleCollectionScrollAbility(isEnabled: true)
             previewContainerView.removeFromSuperview()
         }
-        delegate?.didChoiceEmoji(emoji)
+        delegate?.didChooseEmoji(emoji)
     }
 }
 
@@ -398,10 +442,10 @@ extension MCEmojiPickerView: MCEmojiCollectionViewCellDelegate {
 // MARK: - EmojiCategoryViewDelegate
 
 extension MCEmojiPickerView: MCEmojiCategoryViewDelegate {
-    func didChoiceCategory(at index: Int) {
-        scrollToHeader(for: index)
+    func didChooseCategory(_ type: MCEmojiCategoryType) {
+        scrollToHeader(for: type)
         delegate?.feedbackImpactOccurred()
-        delegate?.didChoiceEmojiCategory(at: index)
+        delegate?.didChooseEmojiCategory(type)
     }
 }
 
