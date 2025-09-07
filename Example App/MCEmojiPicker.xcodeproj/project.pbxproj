@@ -13,6 +13,7 @@
 		C44B58C729867F66006478D5 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = C44B58C629867F66006478D5 /* MCEmojiPicker */; };
 		C49629B329873E2F0070BE66 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C49629B529873E2F0070BE66 /* Localizable.strings */; };
 		C49629BC298744EE0070BE66 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C49629BA298744EE0070BE66 /* LaunchScreen.storyboard */; };
+		DCD11A012E6D082D00207654 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD11A002E6D082D00207654 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		C49629E0298747AF0070BE66 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C49629E1298747B30070BE66 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C49629E2298747B80070BE66 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		DCD11A002E6D082D00207654 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				C44B58B429867F5E006478D5 /* AppDelegate.swift */,
+				DCD11A002E6D082D00207654 /* SceneDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -270,6 +273,7 @@
 			files = (
 				C44B58B929867F5E006478D5 /* ViewController.swift in Sources */,
 				C44B58B529867F5E006478D5 /* AppDelegate.swift in Sources */,
+				DCD11A012E6D082D00207654 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
